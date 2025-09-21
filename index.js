@@ -84,9 +84,61 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 只启用thesis路由进行测试
-const thesisRouter = require('./router/thesis');
-app.use('/thesis', thesisRouter);
+// 直接定义thesis路由进行测试
+app.get('/thesis/list', (req, res) => {
+  try {
+    console.log('开始处理thesis/list请求');
+    
+    // 获取分页参数
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // 查询论文总数
+    const countSql = 'SELECT COUNT(*) AS total FROM thesis';
+    pool.query(countSql, (err, countResult) => {
+      if (err) {
+        console.error('数据库查询错误:', err);
+        return res.status(500).json({
+          message: '数据库查询失败',
+          error: err.message
+        });
+      }
+
+      const total = countResult[0].total;
+      console.log('查询到总数:', total);
+
+      // 查询论文列表
+      const listSql = 'SELECT * FROM thesis ORDER BY publish_time DESC LIMIT ? OFFSET ?';
+      console.log('列表查询SQL:', listSql);
+      console.log('列表查询参数:', [limit, offset]);
+      
+      pool.query(listSql, [limit, offset], (err, results) => {
+        if (err) {
+          console.error('数据库查询错误:', err);
+          return res.status(500).json({
+            message: '数据库查询失败',
+            error: err.message
+          });
+        }
+
+        console.log('查询结果数量:', results.length);
+        res.json({
+          total,
+          list: results,
+          page,
+          limit
+        });
+      });
+    });
+  } catch (error) {
+    console.error('thesis/list异常:', error);
+    res.status(500).json({
+      message: '服务器内部错误',
+      error: error.message
+    });
+  }
+});
 
 // 全局错误处理中间件
 app.use((err, req, res, next) => {
