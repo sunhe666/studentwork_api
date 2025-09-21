@@ -36,6 +36,7 @@ if (process.env.DATABASE_URL) {
 
 // API路由
 app.get('/', (req, res) => {
+  console.log('收到根路径请求');
   res.json({
     message: '毕业设计项目API',
     status: 'running',
@@ -45,6 +46,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
+  console.log('收到健康检查请求');
   if (!pool) {
     return res.status(500).json({
       status: 'error',
@@ -70,12 +72,77 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 处理所有路由
+// 论文列表API
+app.get('/thesis/list', async (req, res) => {
+  try {
+    console.log('收到thesis/list请求');
+    
+    if (!pool) {
+      return res.status(500).json({
+        message: 'DATABASE_URL未配置'
+      });
+    }
+    
+    // 获取分页参数
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    console.log('查询参数:', { page, limit, offset });
+
+    // 查询论文总数
+    const countSql = 'SELECT COUNT(*) AS total FROM thesis';
+    pool.query(countSql, (err, countResult) => {
+      if (err) {
+        console.error('数据库查询错误:', err);
+        return res.status(500).json({
+          message: '数据库查询失败',
+          error: err.message
+        });
+      }
+
+      const total = countResult[0].total;
+      console.log('查询到总数:', total);
+
+      // 查询论文列表
+      const listSql = 'SELECT * FROM thesis ORDER BY publish_time DESC LIMIT ? OFFSET ?';
+      
+      pool.query(listSql, [limit, offset], (err, results) => {
+        if (err) {
+          console.error('数据库查询错误:', err);
+          return res.status(500).json({
+            message: '数据库查询失败',
+            error: err.message
+          });
+        }
+
+        console.log('查询结果数量:', results.length);
+        res.json({
+          total,
+          list: results,
+          page,
+          limit,
+          timestamp: new Date().toISOString()
+        });
+      });
+    });
+  } catch (error) {
+    console.error('thesis/list异常:', error);
+    res.status(500).json({
+      message: '服务器内部错误',
+      error: error.message
+    });
+  }
+});
+
+// 处理所有其他路由
 app.all('*', (req, res) => {
+  console.log('未找到路由:', req.method, req.path);
   res.status(404).json({
     message: 'API路由未找到',
     path: req.path,
-    method: req.method
+    method: req.method,
+    availableRoutes: ['/', '/health', '/thesis/list']
   });
 });
 
