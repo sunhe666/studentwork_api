@@ -10,10 +10,20 @@ const pool = require('./db');
 pool.getConnection((err, connection) => {
   if (err) {
     console.error('数据库连接失败:', err.message);
+    console.error('完整错误信息:', err);
   } else {
     console.log('数据库连接成功');
     connection.release();
   }
+});
+
+// 全局错误处理
+process.on('uncaughtException', (err) => {
+  console.error('未捕获的异常:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('未处理的 Promise 拒绝:', reason);
 });
 
 // 测试路由
@@ -69,8 +79,43 @@ app.use('/user', userRouter);
 app.use('/announcement', announcementRouter);
 app.use('/thesis', thesisRouter);
 
+// 健康检查端点
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.json({
+    message: '毕业设计项目API',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// 数据库健康检查
+app.get('/health', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      return res.status(500).json({
+        status: 'error',
+        message: '数据库连接失败',
+        error: err.message
+      });
+    }
+    
+    connection.release();
+    res.json({
+      status: 'healthy',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  });
+});
+
+// 全局错误处理中间件
+app.use((err, req, res, next) => {
+  console.error('全局错误处理:', err);
+  res.status(500).json({
+    message: '服务器内部错误',
+    error: process.env.NODE_ENV === 'development' ? err.message : '请联系管理员'
+  });
 });
 
 app.listen(port, () => {

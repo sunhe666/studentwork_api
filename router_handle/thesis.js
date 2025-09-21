@@ -52,68 +52,89 @@ const withTransaction = (res, callback) => {
 
 // 获取论文列表
 exports.getList = (req, res) => {
-  // 获取分页参数和查询条件
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
-  const category_name = req.query.category_name || null;
-  const title = req.query.title || null;
-  const publisher = req.query.publisher || null;
+  try {
+    console.log('开始处理thesis/list请求');
+    console.log('环境变量DATABASE_URL:', process.env.DATABASE_URL ? '已设置' : '未设置');
+    
+    // 获取分页参数和查询条件
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const category_name = req.query.category_name || null;
+    const title = req.query.title || null;
+    const publisher = req.query.publisher || null;
 
-  // 构建查询条件
-  let whereClause = '';
-  const params = [];
+    // 构建查询条件
+    let whereClause = '';
+    const params = [];
 
-  if (category_name || title || publisher) {
-    whereClause = 'WHERE ';
-    const conditions = [];
+    if (category_name || title || publisher) {
+      whereClause = 'WHERE ';
+      const conditions = [];
 
-    if (category_name) {
-      conditions.push('category_name = ?');
-      params.push(category_name);
+      if (category_name) {
+        conditions.push('category_name = ?');
+        params.push(category_name);
+      }
+
+      if (title) {
+        conditions.push('title LIKE ?');
+        params.push(`%${title}%`);
+      }
+
+      if (publisher) {
+        conditions.push('publisher LIKE ?');
+        params.push(`%${publisher}%`);
+      }
+
+      whereClause += conditions.join(' AND ');
     }
 
-    if (title) {
-      conditions.push('title LIKE ?');
-      params.push(`%${title}%`);
-    }
+    console.log('查询SQL:', `SELECT COUNT(*) AS total FROM thesis ${whereClause}`);
+    console.log('查询参数:', params);
 
-    if (publisher) {
-      conditions.push('publisher LIKE ?');
-      params.push(`%${publisher}%`);
-    }
-
-    whereClause += conditions.join(' AND ');
-  }
-
-  // 查询论文总数
-  const countSql = `SELECT COUNT(*) AS total FROM thesis ${whereClause}`;
-  db.query(countSql, params, (err, countResult) => {
-    if (err) {
-      return res.status(500).json({
-        message: '数据库查询失败',
-        error: err.message
-      });
-    }
-
-    const total = countResult[0].total;
-
-    // 查询论文列表
-    const listSql = `SELECT * FROM thesis ${whereClause} ORDER BY publish_time DESC LIMIT ? OFFSET ?`;
-    db.query(listSql, [...params, limit, offset], (err, results) => {
+    // 查询论文总数
+    const countSql = `SELECT COUNT(*) AS total FROM thesis ${whereClause}`;
+    db.query(countSql, params, (err, countResult) => {
       if (err) {
+        console.error('数据库查询错误:', err);
         return res.status(500).json({
           message: '数据库查询失败',
           error: err.message
         });
       }
 
-      res.json({
-        total,
-        list: results
+      const total = countResult[0].total;
+      console.log('查询到总数:', total);
+
+      // 查询论文列表
+      const listSql = `SELECT * FROM thesis ${whereClause} ORDER BY publish_time DESC LIMIT ? OFFSET ?`;
+      console.log('列表查询SQL:', listSql);
+      console.log('列表查询参数:', [...params, limit, offset]);
+      
+      db.query(listSql, [...params, limit, offset], (err, results) => {
+        if (err) {
+          console.error('数据库查询错误:', err);
+          return res.status(500).json({
+            message: '数据库查询失败',
+            error: err.message
+          });
+        }
+
+        console.log('查询结果数量:', results.length);
+        res.json({
+          total,
+          list: results
+        });
       });
     });
-  });
+  } catch (error) {
+    console.error('getList函数异常:', error);
+    res.status(500).json({
+      message: '服务器内部错误',
+      error: error.message
+    });
+  }
 };
 
 // 获取论文详情
