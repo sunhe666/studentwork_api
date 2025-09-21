@@ -1,6 +1,17 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+
+// 测试数据库连接
+const pool = require('./db');
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error('数据库连接失败:', err.message);
+  } else {
+    console.log('数据库连接成功');
+    connection.release();
+  }
+});
 
 // 测试路由
 const testRouter = require('./test_api');
