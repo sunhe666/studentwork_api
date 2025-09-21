@@ -7,6 +7,7 @@ const port = process.env.PORT || 3000;
 
 // 测试数据库连接
 const pool = require('./db');
+console.log('开始测试数据库连接...');
 pool.getConnection((err, connection) => {
   if (err) {
     console.error('数据库连接失败:', err.message);
@@ -56,11 +57,21 @@ app.use((req, res, next) => {
 
 // 健康检查端点（放在路由之前）
 app.get('/', (req, res) => {
+  console.log('收到根路径请求');
   res.json({
     message: '毕业设计项目API',
     status: 'running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// 简单测试路由
+app.get('/test', (req, res) => {
+  console.log('收到test请求');
+  res.json({
+    message: 'test路由工作正常',
+    timestamp: new Date().toISOString()
   });
 });
 
