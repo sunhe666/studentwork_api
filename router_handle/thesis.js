@@ -1,22 +1,9 @@
 // 导入数据库连接池
 const db = require('../db');
-// 导入日志工具
-const { recordLog } = require('../utils/log');
 
-// 封装日志记录函数，确保参数正确
+// 简化的日志记录函数（暂时只输出到控制台）
 const logOperation = (userId, username, operation, status, ip, detail, resourceId = null, resourceName = null) => {
-  recordLog({
-    user_id: userId,
-    username: username || null,
-    operation,
-    resource_type: '论文',
-    resource_id: resourceId,
-    resource_name: resourceName,
-    ip_address: ip,
-    operation_detail: detail,
-    status: status === '成功' ? 1 : 0,
-    error_message: status === '失败' ? detail : null
-  });
+  console.log(`日志: 用户${userId}(${username}) ${operation} 论文${resourceId} - ${status}`);
 }
 
 // 事务处理帮助函数
