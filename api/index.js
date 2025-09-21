@@ -4,6 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 
+// 添加调试日志
+console.log('API启动中...');
+
 // 中间件
 app.use(express.json());
 app.use((req, res, next) => {
@@ -146,7 +149,5 @@ app.all('*', (req, res) => {
   });
 });
 
-// 对于Vercel，我们需要导出一个处理函数
-module.exports = (req, res) => {
-  return app(req, res);
-};
+// 简化导出，直接导出Express应用
+module.exports = app;
