@@ -146,4 +146,7 @@ app.all('*', (req, res) => {
   });
 });
 
-module.exports = app;
+// 对于Vercel，我们需要导出一个处理函数
+module.exports = (req, res) => {
+  return app(req, res);
+};
