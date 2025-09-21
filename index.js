@@ -54,36 +54,7 @@ app.use((req, res, next) => {
 // const userRouter = require('./router/user');
 // const announcementRouter = require('./router/announcement');
 
-// 只启用thesis路由进行测试
-const thesisRouter = require('./router/thesis');
-app.use('/thesis', thesisRouter);
-
-// 其他路由暂时注释
-// const aiRouter = require('./router/ai');
-// const cooperationRouter = require('./router/cooperation');
-// const employeeRouter = require('./router/employee');
-// const roleRouter = require('./router/role');
-// const menuRouter = require('./router/menu');
-// const logRouter = require('./router/log');
-// const dashboardRouter = require('./router/dashboard');
-// const recruitmentRouter = require('./router/recruitment');
-
-// app.use(contentRouter);
-// app.use('/ai', aiRouter);
-// app.use('/cooperation', cooperationRouter);
-// app.use('/employee', employeeRouter);
-// app.use('/role', roleRouter);
-// app.use('/menu', menuRouter);
-// app.use(logRouter);
-// app.use(dashboardRouter);
-// app.use('/recruitment', recruitmentRouter);
-
-// app.use('/category', categoryRouter);
-// app.use('/comment', commentRouter);
-// app.use('/user', userRouter);
-// app.use('/announcement', announcementRouter);
-
-// 健康检查端点
+// 健康检查端点（放在路由之前）
 app.get('/', (req, res) => {
   res.json({
     message: '毕业设计项目API',
@@ -112,6 +83,10 @@ app.get('/health', (req, res) => {
     });
   });
 });
+
+// 只启用thesis路由进行测试
+const thesisRouter = require('./router/thesis');
+app.use('/thesis', thesisRouter);
 
 // 全局错误处理中间件
 app.use((err, req, res, next) => {
