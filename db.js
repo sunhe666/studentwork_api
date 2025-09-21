@@ -13,10 +13,7 @@ const createPool = () => {
       database: url.pathname.slice(1), // 移除开头的 /
       waitForConnections: true,
       connectionLimit: 10,
-      queueLimit: 0,
-      acquireTimeout: 60000,
-      timeout: 60000,
-      reconnect: true
+      queueLimit: 0
     });
   } else {
     // 传统的单独环境变量配置
@@ -28,10 +25,7 @@ const createPool = () => {
       database: process.env.DB_NAME || 'biyeshejiXM',
       waitForConnections: true,
       connectionLimit: 10,
-      queueLimit: 0,
-      acquireTimeout: 60000,
-      timeout: 60000,
-      reconnect: true
+      queueLimit: 0
     });
   }
 };
