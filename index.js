@@ -42,18 +42,43 @@ app.use((req, res, next) => {
   }
   next()
 })
-// 路由模块（逐步启用）
-// const adminRouter = require('./router/admin');
-// app.use(adminRouter);
-// const uploadRouter = require('./router/upload');
-// app.use(uploadRouter);
-// const bannerRouter = require('./router/banner');
-// app.use(bannerRouter);
-// const contentRouter = require('./router/content');
-// const categoryRouter = require('./router/category');
-// const commentRouter = require('./router/comment');
-// const userRouter = require('./router/user');
-// const announcementRouter = require('./router/announcement');
+// 路由模块
+const adminRouter = require('./router/admin');
+app.use(adminRouter);
+const uploadRouter = require('./router/upload');
+app.use(uploadRouter);
+const bannerRouter = require('./router/banner');
+app.use(bannerRouter);
+const contentRouter = require('./router/content');
+const categoryRouter = require('./router/category');
+const commentRouter = require('./router/comment');
+const userRouter = require('./router/user');
+const announcementRouter = require('./router/announcement');
+const thesisRouter = require('./router/thesis');
+const aiRouter = require('./router/ai');
+const cooperationRouter = require('./router/cooperation');
+const employeeRouter = require('./router/employee');
+const roleRouter = require('./router/role');
+const menuRouter = require('./router/menu');
+const logRouter = require('./router/log');
+const dashboardRouter = require('./router/dashboard');
+const recruitmentRouter = require('./router/recruitment');
+
+app.use(contentRouter);
+app.use('/ai', aiRouter);
+app.use('/cooperation', cooperationRouter);
+app.use('/employee', employeeRouter);
+app.use('/role', roleRouter);
+app.use('/menu', menuRouter);
+app.use(logRouter);
+app.use(dashboardRouter);
+app.use('/recruitment', recruitmentRouter);
+
+app.use('/category', categoryRouter);
+app.use('/comment', commentRouter);
+app.use('/user', userRouter);
+app.use('/announcement', announcementRouter);
+app.use('/thesis', thesisRouter);
 
 // 健康检查端点（放在路由之前）
 app.get('/', (req, res) => {
@@ -95,61 +120,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 直接定义thesis路由进行测试
-app.get('/thesis/list', (req, res) => {
-  try {
-    console.log('开始处理thesis/list请求');
-    
-    // 获取分页参数
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
-
-    // 查询论文总数
-    const countSql = 'SELECT COUNT(*) AS total FROM thesis';
-    pool.query(countSql, (err, countResult) => {
-      if (err) {
-        console.error('数据库查询错误:', err);
-        return res.status(500).json({
-          message: '数据库查询失败',
-          error: err.message
-        });
-      }
-
-      const total = countResult[0].total;
-      console.log('查询到总数:', total);
-
-      // 查询论文列表
-      const listSql = 'SELECT * FROM thesis ORDER BY publish_time DESC LIMIT ? OFFSET ?';
-      console.log('列表查询SQL:', listSql);
-      console.log('列表查询参数:', [limit, offset]);
-      
-      pool.query(listSql, [limit, offset], (err, results) => {
-        if (err) {
-          console.error('数据库查询错误:', err);
-          return res.status(500).json({
-            message: '数据库查询失败',
-            error: err.message
-          });
-        }
-
-        console.log('查询结果数量:', results.length);
-        res.json({
-          total,
-          list: results,
-          page,
-          limit
-        });
-      });
-    });
-  } catch (error) {
-    console.error('thesis/list异常:', error);
-    res.status(500).json({
-      message: '服务器内部错误',
-      error: error.message
-    });
-  }
-});
+// 路由已通过thesis路由模块处理
 
 // 全局错误处理中间件
 app.use((err, req, res, next) => {

@@ -4,6 +4,7 @@ const db = require('../db');
 // 简化的日志记录函数（暂时只输出到控制台）
 const logOperation = (userId, username, operation, status, ip, detail, resourceId = null, resourceName = null) => {
   console.log(`日志: 用户${userId}(${username}) ${operation} 论文${resourceId} - ${status}`);
+  // 可以在这里添加数据库日志记录逻辑
 }
 
 // 事务处理帮助函数
