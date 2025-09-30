@@ -15,5 +15,7 @@ const upload = multer({
 router.post('/upload/single', upload.single('file'), uploadHandler.uploadSingle);
 // 多张图片上传
 router.post('/upload/multiple', upload.array('files', 10), uploadHandler.uploadMultiple);
+// 文件代理访问（解决CORS问题）
+router.get('/proxy', uploadHandler.proxyFile);
 
 module.exports = router; 
