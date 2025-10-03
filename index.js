@@ -2,6 +2,8 @@
 require('dotenv').config();
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -125,6 +127,24 @@ const recruitmentRouter = require('./router/recruitment');
 
 app.use(contentRouter);
 app.use('/ai', aiRouter);
+
+// 文件下载路由
+app.get('/api/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads/documents', filename);
+  
+  // 检查文件是否存在
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: '文件不存在' });
+  }
+  
+  // 设置下载头
+  res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+  res.setHeader('Content-Type', 'application/octet-stream');
+  
+  // 发送文件
+  res.sendFile(filePath);
+});
 app.use('/cooperation', cooperationRouter);
 app.use('/employee', employeeRouter);
 app.use('/role', roleRouter);

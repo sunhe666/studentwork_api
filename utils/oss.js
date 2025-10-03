@@ -11,12 +11,13 @@ const ossClient = new OSS({
  * 上传文件到阿里云OSS
  * @param {string|Buffer} fileData 本地文件路径或Buffer数据
  * @param {string} ossPath OSS目标路径
+ * @param {object} options 上传选项
  * @returns {Promise<object>} 上传结果
  */
-async function uploadToOSS(fileData, ossPath) {
+async function uploadToOSS(fileData, ossPath, options = {}) {
   try {
     // 支持文件路径和Buffer两种方式
-    const result = await ossClient.put(ossPath, fileData);
+    const result = await ossClient.put(ossPath, fileData, options);
     return result;
   } catch (err) {
     console.error('OSS上传错误:', err);
@@ -24,7 +25,53 @@ async function uploadToOSS(fileData, ossPath) {
   }
 }
 
+/**
+ * 删除OSS文件
+ * @param {string} ossPath OSS文件路径
+ * @returns {Promise<object>} 删除结果
+ */
+async function deleteFromOSS(ossPath) {
+  try {
+    const result = await ossClient.delete(ossPath);
+    return result;
+  } catch (err) {
+    console.error('OSS删除错误:', err);
+    throw err;
+  }
+}
+
+/**
+ * 生成OSS文件的签名URL
+ * @param {string} ossPath OSS文件路径
+ * @param {number} expires 过期时间（秒），默认1小时
+ * @returns {string} 签名URL
+ */
+function generateSignedUrl(ossPath, expires = 3600) {
+  try {
+    const url = ossClient.signatureUrl(ossPath, { expires });
+    return url;
+  } catch (err) {
+    console.error('生成签名URL错误:', err);
+    throw err;
+  }
+}
+
+/**
+ * 生成OSS文件路径
+ * @param {string} folder 文件夹名称
+ * @param {string} filename 文件名
+ * @returns {string} OSS路径
+ */
+function generateOSSPath(folder, filename) {
+  const timestamp = Date.now();
+  const randomStr = Math.random().toString(36).substring(2, 8);
+  return `${folder}/${timestamp}-${randomStr}-${filename}`;
+}
+
 module.exports = {
   ossClient,
-  uploadToOSS
+  uploadToOSS,
+  deleteFromOSS,
+  generateSignedUrl,
+  generateOSSPath
 }; 
