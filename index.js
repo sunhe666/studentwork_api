@@ -40,6 +40,7 @@ app.use((req, res, next) => {
     'https://www.bishe.asia',
     'https://bishe.asia',
     'https://admin.bishe.asia',
+    'https://www.sunhe.site',
     'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
