@@ -4,12 +4,8 @@ const aiHandle = require('../router_handle/ai');
 const multer = require('multer');
 const path = require('path');
 
-// 确保上传目录存在
-const fs = require('fs');
-const uploadDir = 'uploads/documents/';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// 注意：在无服务器环境中使用内存存储，不需要创建本地目录
+// 所有文件处理都在内存中进行，然后直接上传到OSS
 
 // 配置文件上传 - 使用内存存储
 const storage = multer.memoryStorage();
